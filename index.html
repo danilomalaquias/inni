@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Jogo de Tradução – Colmeia Fixa 7 Letras</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary: #00b7a3;
+      --gray: #f4f4f6;
+      --dark: #1d1d1f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .config-box {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 280px;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fafafa;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      font-size: 14px;
+      z-index: 1000;
+      transition: opacity .5s ease;
+    }
+    .config-box.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .config-box textarea {
+      width: 100%;
+      height: 100px;
+      font-family: monospace;
+    }
+    .config-box input[type="file"] {
+      margin-top: 10px;
+    }
+    .config-box button {
+      margin-top: 6px;
+      width: 100%;
+      padding: 8px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #toggleConfigBtn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      opacity: 0.8;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      z-index: 1001;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 60px;
+      max-width: 1200px;
+      width: 100%;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #translate-container {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      position: relative;
+      text-align: center;
+      width: 200px;
+    }
+    #translate-word {
+      color: var(--primary);
+      text-transform: uppercase;
+    }
+    #typed-word {
+      display: flex;
+      gap: 4px;
+      font-size: 18px;
+      margin: 0 0 16px;
+      text-transform: uppercase;
+      justify-content: center;
+    }
+    #message-box {
+      position: absolute;
+      top: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: none;
+      white-space: nowrap;
+      user-select: none;
+      z-index: 10;
+      font-family: 'Inter', sans-serif;
+    }
+    .msg-success {
+      background-color: #00b7a3;
+      color: #fff;
+    }
+    .msg-error {
+      background-color: #000;
+      color: #fff;
+    }
+    .honeycomb {
+      position: relative;
+      width: 200px;
+      height: 220px;
+      margin-bottom: 20px;
+    }
+    .letter {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #e9ebf0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: #2c2c2c;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .1s ease;
+    }
+    .letter:active {
+      transform: scale(.9);
+    }
+    .center {
+      background: var(--primary) !important;
+      color: #fff !important;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 260px;
+    }
+    .btn {
+      padding: 8px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      background: #f2f2f2;
+      font-weight: 600;
+      cursor: pointer;
+      min-width: 100px;
+      user-select: none;
+      transition: transform .1s ease;
+    }
+    .btn:active {
+      transform: scale(.97);
+    }
+    .btn.hints {
+      background: #d9f1ed;
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .btn.confirm {
+      background: var(--primary);
+      color: #fff;
+    }
+    .right-panel {
+      width: 400px;
+      max-width: 100%;
+    }
+    .progress {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    .progress-bar {
+      height: 6px;
+      background: #d2f6f2;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      background: var(--primary);
+      transition: width .3s ease;
+    }
+    .word-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      max-height: 240px;
+      overflow-y: auto;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    .word-box {
+      background: #fff;
+      border: 2px solid #f0f0f0;
+      border-radius: 6px;
+      padding: 8px;
+      text-align: center;
+      font-weight: 600;
+      color: #888;
+      user-select: none;
+    }
+    .word-box.found {
+      background: #e0f8f4;
+      color: #007f6c;
+      border-color: #00b7a3;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .word-box.found.animate {
+      animation: pulse .5s ease-in-out;
+    }
+    .bottom-action {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .end-btn {
+      width: 100%;
+      padding: 10px;
+      background: #f8f8f8;
+      border: none;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .right-panel {
+        width: 100%;
+      }
+      .honeycomb {
+        transform: scale(.9);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="config-box">
+    <strong>Palavras (ing - pt):</strong>
+    <textarea id="configInput" placeholder="Ex: cat - gato\nDOG - cachorro\nSNAKE - cobra"></textarea>
+    <input type="file" id="fileInput" accept=".txt" />
+    <button id="loadBtn">Carregar</button>
+    <div id="status" style="margin-top:10px;font-size:13px;color:#555;"></div>
+  </div>
+
+  <button id="toggleConfigBtn">⚙️</button>
+
+  <div class="container">
+    <div class="left-panel">
+      <div id="translate-container">
+        Traduza: <span id="translate-word">---</span>
+        <div id="message-box"></div>
+      </div>
+      <div id="typed-word"></div>
+      <div class="honeycomb" id="honeycomb"></div>
+      <div class="controls">
+        <button class="btn" onclick="clearWord()">Apagar</button>
+        <button class="btn" onclick="shuffleLetters()">🔄</button>
+        <button class="btn" onclick="skipWord()">Pular palavra</button>
+        <button class="btn confirm" onclick="checkWord()">Confirmar</button>
+        <button class="btn hints" id="toggleHintsBtn">Mostrar dicas</button>
+      </div>
+    </div>
+    <div class="right-panel">
+      <div class="progress">
+        <span>Início</span>
+        <span id="scoreText">0/0</span>
+      </div>
+      <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+      <h4 style="font-size:13px;margin:16px 0 8px;">Palavras já encontradas</h4>
+      <div id="wordList" class="word-list"></div>
+      <div class="bottom-action">
+        <button class="end-btn" onclick="endGame()">⏹️ Encerrar partida</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // AQUI VAI O JAVASCRIPT COM AS ATUALIZAÇÕES
+    // Por limite de caracteres, continuarei no próximo comentário.
+  </script>
+</body>
+</html>
+
+
+  <script>
+    function removeAccents(str) {
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+    function shuffleArray(arr) {
+      const c = [...arr];
+      for (let i = c.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [c[i], c[j]] = [c[j], c[i]];
+      }
+      return c;
+    }
+
+    let wordPairs = [];
+    let generatedHives = [];
+    let currentIndex = 0;
+    let typedWord = "";
+    let centerLetter = "";
+    let surroundingLetters = [];
+    let translatedStatus = [];
+    let showHints = false;
+
+    const positions = [
+      { top: 0, left: 68 },
+      { top: 34, left: 136 },
+      { top: 102, left: 136 },
+      { top: 136, left: 68 },
+      { top: 102, left: 0 },
+      { top: 34, left: 0 }
+    ];
+
+    const configBox = document.querySelector('.config-box');
+    const toggleBtn = document.getElementById('toggleConfigBtn');
+    const statusDiv = document.getElementById('status');
+    const translateEl = document.getElementById('translate-word');
+    const typedEl = document.getElementById('typed-word');
+    const honeycombEl = document.getElementById('honeycomb');
+    const wordListEl = document.getElementById('wordList');
+    const scoreEl = document.getElementById('scoreText');
+    const progressEl = document.getElementById('progressFill');
+    const hintsBtn = document.getElementById('toggleHintsBtn');
+    const messageBox = document.getElementById('message-box');
+
+    toggleBtn.onclick = () => {
+      configBox.classList.toggle('hidden');
+      toggleBtn.textContent = configBox.classList.contains('hidden') ? '⚙️' : '✖️';
+    };
+
+    hintsBtn.addEventListener('click', () => {
+      showHints = !showHints;
+      hintsBtn.textContent = showHints ? 'Ocultar dicas' : 'Mostrar dicas';
+      renderWordList();
+    });
+
+    document.getElementById('loadBtn').onclick = () => {
+      const text = document.getElementById('configInput').value.trim();
+      wordPairs = text.split(/\n+/)
+        .map(l => l.trim())
+        .filter(l => l.includes('-'))
+        .map(l => {
+          const [en, pt] = l.split('-').map(s => s.trim());
+          return { en: en.toLowerCase(), pt: pt.toLowerCase() };
+        });
+      if (wordPairs.length === 0) {
+        alert("Insira pares válidos.");
+        return;
+      }
+      initializeGame();
+    };
+
+    document.getElementById('fileInput').addEventListener('change', e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = ev => {
+        document.getElementById('configInput').value = ev.target.result;
+      };
+      r.readAsText(f);
+    });
+
+    function initializeGame() {
+      generatedHives = wordPairs.map(pair => {
+        const cleanTranslated = removeAccents(pair.pt);
+        const uniqueLetters = [...new Set(cleanTranslated.split(''))];
+
+        // Define letra central como a mais frequente
+        const freq = {};
+        for (const l of cleanTranslated) {
+          freq[l] = (freq[l] || 0) + 1;
+        }
+        let max = 0;
+        let candidates = [];
+        for (const [l, count] of Object.entries(freq)) {
+          if (count > max) {
+            max = count;
+            candidates = [l];
+          } else if (count === max) {
+            candidates.push(l);
+          }
+        }
+        const central = candidates.sort().reverse()[0]; // maior alfabética se empate
+
+        // Construir colmeia com letras únicas (sem repetições visuais)
+        const others = uniqueLetters.filter(l => l !== central);
+        const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+        let surround = [...others];
+
+        const cleanSet = new Set([...surround]);
+        while (cleanSet.size < 6) {
+          const r = alphabet[Math.floor(Math.random() * alphabet.length)];
+          if (!cleanSet.has(r) && r !== central) {
+            cleanSet.add(r);
+          }
+        }
+        surround = Array.from(cleanSet).slice(0, 6);
+
+        return {
+          hive: [central, ...surround],
+          central,
+          pair
+        };
+      });
+
+      translatedStatus = wordPairs.map(_ => false);
+      statusDiv.textContent = `${generatedHives.length} colmeia(s) gerada(s).`;
+      currentIndex = 0;
+      startGame();
+    }
+
+    function startGame() {
+      showHints = false;
+      hintsBtn.textContent = 'Mostrar dicas';
+      renderGameState(currentIndex);
+    }
+
+    function renderGameState(idx) {
+      const { hive, central, pair } = generatedHives[idx];
+      centerLetter = central;
+      surroundingLetters = hive.filter(l => l !== central);
+
+      translateEl.textContent = pair.en.toUpperCase();
+	  speakEnglishWord(pair.en);
+      typedWord = "";
+      updateTypedDisplay();
+      renderLetters();
+      renderWordList();
+      updateProgress();
+    }
+
+    function renderLetters() {
+      honeycombEl.innerHTML = "";
+      surroundingLetters.slice(0, 6).forEach((l, i) => {
+        const pos = positions[i];
+        const div = document.createElement('div');
+        div.className = 'letter';
+        div.style.top = `${pos.top}px`;
+        div.style.left = `${pos.left}px`;
+        div.textContent = l.toUpperCase();
+        div.onclick = () => addLetter(l);
+        honeycombEl.appendChild(div);
+      });
+      const cdiv = document.createElement('div');
+      cdiv.className = 'letter center';
+      cdiv.style.top = '68px';
+      cdiv.style.left = '68px';
+      cdiv.textContent = centerLetter.toUpperCase();
+      cdiv.onclick = () => addLetter(centerLetter);
+      honeycombEl.appendChild(cdiv);
+    }
+
+    function addLetter(l) {
+      typedWord += l.toLowerCase();
+      updateTypedDisplay();
+    }
+
+    function updateTypedDisplay() {
+      typedEl.innerHTML = "";
+      for (const ch of typedWord.toUpperCase()) {
+        const span = document.createElement('span');
+        if (ch.toLowerCase() === centerLetter) {
+          span.style.color = 'var(--primary)';
+        }
+        span.textContent = ch;
+        typedEl.appendChild(span);
+      }
+    }
+
+    function clearWord() {
+      typedWord = "";
+      updateTypedDisplay();
+    }
+
+    function shuffleLetters() {
+      surroundingLetters = shuffleArray(surroundingLetters);
+      renderLetters();
+    }
+
+    function skipWord() {
+      goToNext();
+    }
+
+    function checkWord() {
+      if (!typedWord) return;
+      const w = typedWord.toLowerCase();
+      const target = generatedHives[currentIndex].pair.pt.toLowerCase();
+
+      const isNew = !translatedStatus[currentIndex];
+      if (w === target && isNew) {
+        translatedStatus[currentIndex] = true;
+        showMessage("Boa!", true);
+        renderWordList();
+        updateProgress();
+        if (translatedStatus.some(v => !v)) {
+          goToNext();
+        } else {
+          showMessage("Todas traduzidas!", true);
+          translateEl.textContent = "✅ Fim do jogo";
+        }
+      } else if (!isNew) {
+        showMessage("Já traduzida", false);
+      } else {
+        showMessage("Palavra incorreta", false);
+      }
+      clearWord();
+    }
+
+    function goToNext() {
+      const len = generatedHives.length;
+      for (let i = 1; i <= len; i++) {
+        const idx = (currentIndex + i) % len;
+        if (!translatedStatus[idx]) {
+          currentIndex = idx;
+          renderGameState(idx);
+          return;
+        }
+      }
+    }
+
+    function renderWordList() {
+      wordListEl.innerHTML = '';
+
+      const indices = Array.from({ length: wordPairs.length }, (_, i) => i);
+      const shuffledIndices = shuffleArray(indices);
+
+      shuffledIndices.forEach(idx => {
+        const pair = wordPairs[idx];
+        const isFound = translatedStatus[idx];
+        const div = document.createElement('div');
+        div.className = 'word-box';
+        if (isFound) {
+          div.classList.add('found', 'animate');
+          div.textContent = pair.pt.toUpperCase();
+        } else if (showHints) {
+          div.textContent = pair.pt.toUpperCase();
+        } else {
+          div.textContent = pair.pt.length + ' letras';
+        }
+        wordListEl.appendChild(div);
+      });
+    }
+
+    function updateProgress() {
+      const done = translatedStatus.filter(v => v).length;
+      const total = translatedStatus.length;
+      scoreEl.textContent = `${done}/${total}`;
+      progressEl.style.width = total ? (done / total) * 100 + '%' : '0%';
+    }
+
+    function showMessage(text, success) {
+      clearTimeout(messageBox._timeout);
+      messageBox.textContent = text;
+      messageBox.className = '';
+      messageBox.classList.add(success ? 'msg-success' : 'msg-error');
+      messageBox.style.display = 'inline-block';
+      messageBox._timeout = setTimeout(() => {
+        messageBox.style.display = 'none';
+      }, 2000);
+    }
+
+    function endGame() {
+      if (confirm("Deseja encerrar a partida?")) {
+        location.reload();
+      }
+    }
+	function speakEnglishWord(word) {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.85; // velocidade mais lenta para ajudar no aprendizado
+    speechSynthesis.cancel(); // interrompe qualquer fala anterior
+    speechSynthesis.speak(utterance);
+  } else {
+    console.warn("Speech synthesis não é suportado neste navegador.");
+  }
+}
+  </script>
+</body>
+</html>
