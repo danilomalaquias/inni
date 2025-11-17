@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Jogo de Tradução – Colmeia Fixa 7 Letras</title>
+  <title>Jogo de Tradução – Modo Desafio</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
   <style>
     :root {
@@ -22,53 +22,7 @@
       min-height: 100vh;
       padding: 20px;
     }
-    .config-box {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      width: 280px;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      background: #fafafa;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      font-size: 14px;
-      z-index: 1000;
-      transition: opacity .5s ease;
-    }
-    .config-box.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-    .config-box textarea {
-      width: 100%;
-      height: 100px;
-      font-family: monospace;
-    }
-    .config-box input[type="file"] {
-      margin-top: 10px;
-    }
-    .config-box button {
-      margin-top: 6px;
-      width: 100%;
-      padding: 8px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    #toggleConfigBtn {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      opacity: 0.8;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 24px;
-      z-index: 1001;
-    }
+    #toggleConfigBtn { display: none; }
     .container {
       display: flex;
       flex-wrap: wrap;
@@ -77,7 +31,25 @@
       width: 100%;
       justify-content: center;
       align-items: flex-start;
+      position: relative;
     }
+    /* === Timer === */
+    #timer {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #f8f8f8;
+      padding: 8px 14px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      z-index: 1000;
+      transition: color .3s ease;
+    }
+    #timer.low { color: red; }
+
     .left-panel {
       display: flex;
       flex-direction: column;
@@ -91,10 +63,7 @@
       text-align: center;
       width: 200px;
     }
-    #translate-word {
-      color: var(--primary);
-      text-transform: uppercase;
-    }
+    #translate-word { color: var(--primary); text-transform: uppercase; }
     #typed-word {
       display: flex;
       gap: 4px;
@@ -116,16 +85,10 @@
       white-space: nowrap;
       user-select: none;
       z-index: 10;
-      font-family: 'Inter', sans-serif;
     }
-    .msg-success {
-      background-color: #00b7a3;
-      color: #fff;
-    }
-    .msg-error {
-      background-color: #000;
-      color: #fff;
-    }
+    .msg-success { background-color: #00b7a3; color: #fff; }
+    .msg-error { background-color: #000; color: #fff; }
+
     .honeycomb {
       position: relative;
       width: 200px;
@@ -148,13 +111,9 @@
       user-select: none;
       transition: transform .1s ease;
     }
-    .letter:active {
-      transform: scale(.9);
-    }
-    .center {
-      background: var(--primary) !important;
-      color: #fff !important;
-    }
+    .letter:active { transform: scale(.9); }
+    .center { background: var(--primary) !important; color: #fff !important; }
+
     .controls {
       display: flex;
       gap: 10px;
@@ -175,22 +134,11 @@
       user-select: none;
       transition: transform .1s ease;
     }
-    .btn:active {
-      transform: scale(.97);
-    }
-    .btn.hints {
-      background: #d9f1ed;
-      color: var(--primary);
-      font-weight: 700;
-    }
-    .btn.confirm {
-      background: var(--primary);
-      color: #fff;
-    }
-    .right-panel {
-      width: 400px;
-      max-width: 100%;
-    }
+    .btn:active { transform: scale(.97); }
+    .btn.hints { background: #d9f1ed; color: var(--primary); font-weight: 700; }
+    .btn.confirm { background: var(--primary); color: #fff; }
+
+    .right-panel { width: 400px; max-width: 100%; }
     .progress {
       display: flex;
       align-items: center;
@@ -211,6 +159,7 @@
       background: var(--primary);
       transition: width .3s ease;
     }
+
     .word-list {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -235,18 +184,15 @@
       color: #007f6c;
       border-color: #00b7a3;
     }
+
     @keyframes pulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.2); }
       100% { transform: scale(1); }
     }
-    .word-box.found.animate {
-      animation: pulse .5s ease-in-out;
-    }
-    .bottom-action {
-      margin-top: 20px;
-      text-align: center;
-    }
+    .word-box.found.animate { animation: pulse .5s ease-in-out; }
+
+    .bottom-action { margin-top: 20px; text-align: center; }
     .end-btn {
       width: 100%;
       padding: 10px;
@@ -256,30 +202,32 @@
       border-radius: 6px;
       cursor: pointer;
     }
+
+    #retryBtn {
+      display: none;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #00b7a3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
     @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-        align-items: center;
-      }
-      .right-panel {
-        width: 100%;
-      }
-      .honeycomb {
-        transform: scale(.9);
-      }
+      .container { flex-direction: column; align-items: center; gap: 30px; }
+      .right-panel { width: 100%; order: -1; }
+      .word-list { grid-template-columns: repeat(2, 1fr); font-size: 12px; }
+      .honeycomb { transform: scale(.85); }
+      .controls { max-width: 100%; }
+      #timer { font-size: 20px; padding: 6px 10px; }
     }
   </style>
 </head>
 <body>
-  <div class="config-box">
-    <strong>Palavras (ing - pt):</strong>
-    <textarea id="configInput" placeholder="Ex: cat - gato\nDOG - cachorro\nSNAKE - cobra"></textarea>
-    <input type="file" id="fileInput" accept=".txt" />
-    <button id="loadBtn">Carregar</button>
-    <div id="status" style="margin-top:10px;font-size:13px;color:#555;"></div>
-  </div>
-
-  <button id="toggleConfigBtn">⚙️</button>
+  <div id="timer">0s</div>
 
   <div class="container">
     <div class="left-panel">
@@ -290,16 +238,18 @@
       <div id="typed-word"></div>
       <div class="honeycomb" id="honeycomb"></div>
       <div class="controls">
-        <button class="btn" onclick="clearWord()">Apagar</button>
+        <button class="btn" onclick="deleteLetter()">Apagar</button>
         <button class="btn" onclick="shuffleLetters()">🔄</button>
-        <button class="btn" onclick="skipWord()">Pular palavra</button>
+        <button class="btn" onclick="skipWord()">Pular</button>
         <button class="btn confirm" onclick="checkWord()">Confirmar</button>
         <button class="btn hints" id="toggleHintsBtn">Mostrar dicas</button>
       </div>
+      <button id="retryBtn" onclick="restartGame()">🔁 Jogar novamente</button>
     </div>
+
     <div class="right-panel">
       <div class="progress">
-        <span>Início</span>
+        <span id="levelText">Nível 1</span>
         <span id="scoreText">0/0</span>
       </div>
       <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
@@ -311,308 +261,269 @@
     </div>
   </div>
 
-  <script>
-  </script>
-</body>
-</html>
+ <script>
+function removeAccents(str){ return str.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
+function shuffleArray(arr){ const c=[...arr]; for(let i=c.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[c[i],c[j]]=[c[j],c[i]];} return c; }
 
+const levels = [
+  [
+    { en: "red", pt: "vermelho" },
+    { en: "meat", pt: "carne" },
+    { en: "cheese", pt: "queijo" },
+    { en: "pizza", pt: "pizza" },
+    { en: "tomato", pt: "tomate" }
+  ],
+  [
+    { en: "salad", pt: "salada" },
+    { en: "chocolate", pt: "chocolate" },
+    { en: "cake", pt: "bolo" },
+    { en: "rice", pt: "arroz" },
+    { en: "beans", pt: "feijao" }
+  ],
+  [
+    { en: "boy", pt: "garoto" },
+    { en: "banana", pt: "banana" }
+  ]
+];
 
-  <script>
-    function removeAccents(str) {
-      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+let currentLevel=0, wordPairs=[], generatedHives=[], currentIndex=0;
+let typedWord="", centerLetter="", surroundingLetters=[], translatedStatus=[];
+let showHints=false, timerInterval=null, timeLeft=0, accumulatedTime=0;
+
+let firstWordSpoken = false;
+
+const positions=[
+  {top:0,left:68},{top:34,left:136},{top:102,left:136},{top:136,left:68},{top:102,left:0},{top:34,left:0}
+];
+
+const translateEl=document.getElementById('translate-word');
+const typedEl=document.getElementById('typed-word');
+const honeycombEl=document.getElementById('honeycomb');
+const wordListEl=document.getElementById('wordList');
+const scoreEl=document.getElementById('scoreText');
+const progressEl=document.getElementById('progressFill');
+const hintsBtn=document.getElementById('toggleHintsBtn');
+const messageBox=document.getElementById('message-box');
+const levelText=document.getElementById('levelText');
+const timerEl=document.getElementById('timer');
+const retryBtn=document.getElementById('retryBtn');
+
+hintsBtn.addEventListener('click',()=>{
+  showHints=!showHints;
+  hintsBtn.textContent=showHints?'Ocultar dicas':'Mostrar dicas';
+  renderWordList();
+});
+
+function initializeLevel(initialTime = 0){
+  wordPairs = levels[currentLevel];
+  generatedHives = wordPairs.map(pair => {
+    const clean = removeAccents(pair.pt);
+    const unique = [...new Set(clean.split(''))];
+    const freq = {};
+    for(const l of clean) freq[l] = (freq[l] || 0) + 1;
+    const central = Object.entries(freq).sort((a,b)=>b[1]-a[1])[0][0];
+    const others = unique.filter(l=>l!==central);
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    let surround = [...others];
+    const cleanSet = new Set([...surround]);
+    while(cleanSet.size < 6){
+      const r = alphabet[Math.floor(Math.random()*alphabet.length)];
+      if(!cleanSet.has(r) && r !== central) cleanSet.add(r);
     }
-    function shuffleArray(arr) {
-      const c = [...arr];
-      for (let i = c.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [c[i], c[j]] = [c[j], c[i]];
-      }
-      return c;
+    surround = Array.from(cleanSet).slice(0,6);
+    return { hive: [central, ...surround], central, pair };
+  });
+  translatedStatus = wordPairs.map(() => false);
+  currentIndex = 0;
+  accumulatedTime = initialTime; 
+  startGame();
+}
+
+function startGame(){
+  showHints=false; hintsBtn.textContent='Mostrar dicas';
+  levelText.textContent=`Nível ${currentLevel+1}`;
+  renderGameState(currentIndex);
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+  timeLeft = 10 + accumulatedTime;
+  accumulatedTime = 0; 
+  updateTimerDisplay();
+  timerInterval=setInterval(()=>{
+    timeLeft--;
+    updateTimerDisplay();
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      endChallenge();
     }
+  },1000);
+}
 
-    let wordPairs = [];
-    let generatedHives = [];
-    let currentIndex = 0;
-    let typedWord = "";
-    let centerLetter = "";
-    let surroundingLetters = [];
-    let translatedStatus = [];
-    let showHints = false;
+function updateTimerDisplay(){
+  timerEl.textContent=`${timeLeft}s`;
+  timerEl.style.color = timeLeft <= 5 ? 'red' : 'black';
+}
 
-    const positions = [
-      { top: 0, left: 68 },
-      { top: 34, left: 136 },
-      { top: 102, left: 136 },
-      { top: 136, left: 68 },
-      { top: 102, left: 0 },
-      { top: 34, left: 0 }
-    ];
+function endChallenge(){
+  showMessage("⏰ Tempo esgotado!",false);
+  retryBtn.style.display='inline-block';
+  honeycombEl.innerHTML="";
+  clearInterval(timerInterval);
+}
 
-    const configBox = document.querySelector('.config-box');
-    const toggleBtn = document.getElementById('toggleConfigBtn');
-    const statusDiv = document.getElementById('status');
-    const translateEl = document.getElementById('translate-word');
-    const typedEl = document.getElementById('typed-word');
-    const honeycombEl = document.getElementById('honeycomb');
-    const wordListEl = document.getElementById('wordList');
-    const scoreEl = document.getElementById('scoreText');
-    const progressEl = document.getElementById('progressFill');
-    const hintsBtn = document.getElementById('toggleHintsBtn');
-    const messageBox = document.getElementById('message-box');
+function renderGameState(idx){
+  const {hive,central,pair}=generatedHives[idx];
+  centerLetter=central;
+  surroundingLetters=hive.filter(l=>l!==central);
+  translateEl.textContent=pair.en.toUpperCase();
+  speakEnglishWord(pair.en);
+  typedWord=""; updateTypedDisplay();
+  renderLetters(); renderWordList(); updateProgress();
+  startTimer();
+}
 
-    toggleBtn.onclick = () => {
-      configBox.classList.toggle('hidden');
-      toggleBtn.textContent = configBox.classList.contains('hidden') ? '⚙️' : '✖️';
-    };
+function renderLetters(){
+  honeycombEl.innerHTML="";
+  surroundingLetters.forEach((l,i)=>{
+    const pos=positions[i];
+    const div=document.createElement('div');
+    div.className='letter'; div.style.top=`${pos.top}px`; div.style.left=`${pos.left}px`;
+    div.textContent=l.toUpperCase(); div.onclick=()=>addLetter(l);
+    honeycombEl.appendChild(div);
+  });
+  const cdiv=document.createElement('div');
+  cdiv.className='letter center'; cdiv.style.top='68px'; cdiv.style.left='68px';
+  cdiv.textContent=centerLetter.toUpperCase(); cdiv.onclick=()=>addLetter(centerLetter);
+  honeycombEl.appendChild(cdiv);
+}
 
-    hintsBtn.addEventListener('click', () => {
-      showHints = !showHints;
-      hintsBtn.textContent = showHints ? 'Ocultar dicas' : 'Mostrar dicas';
-      renderWordList();
-    });
+function addLetter(l){ typedWord+=l; updateTypedDisplay(); }
+function clearWord(){ typedWord=""; updateTypedDisplay(); } /
 
-    document.getElementById('loadBtn').onclick = () => {
-      const text = document.getElementById('configInput').value.trim();
-      wordPairs = text.split(/\n+/)
-        .map(l => l.trim())
-        .filter(l => l.includes('-'))
-        .map(l => {
-          const [en, pt] = l.split('-').map(s => s.trim());
-          return { en: en.toLowerCase(), pt: pt.toLowerCase() };
-        });
-      if (wordPairs.length === 0) {
-        alert("Insira pares válidos.");
-        return;
-      }
-      initializeGame();
-    };
-
-    document.getElementById('fileInput').addEventListener('change', e => {
-      const f = e.target.files[0];
-      if (!f) return;
-      const r = new FileReader();
-      r.onload = ev => {
-        document.getElementById('configInput').value = ev.target.result;
-      };
-      r.readAsText(f);
-    });
-
-    function initializeGame() {
-      generatedHives = wordPairs.map(pair => {
-        const cleanTranslated = removeAccents(pair.pt);
-        const uniqueLetters = [...new Set(cleanTranslated.split(''))];
-
-        // Define letra central como a mais frequente
-        const freq = {};
-        for (const l of cleanTranslated) {
-          freq[l] = (freq[l] || 0) + 1;
-        }
-        let max = 0;
-        let candidates = [];
-        for (const [l, count] of Object.entries(freq)) {
-          if (count > max) {
-            max = count;
-            candidates = [l];
-          } else if (count === max) {
-            candidates.push(l);
-          }
-        }
-        const central = candidates.sort().reverse()[0]; // maior alfabética se empate
-
-        // Construir colmeia com letras únicas (sem repetições visuais)
-        const others = uniqueLetters.filter(l => l !== central);
-        const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
-        let surround = [...others];
-
-        const cleanSet = new Set([...surround]);
-        while (cleanSet.size < 6) {
-          const r = alphabet[Math.floor(Math.random() * alphabet.length)];
-          if (!cleanSet.has(r) && r !== central) {
-            cleanSet.add(r);
-          }
-        }
-        surround = Array.from(cleanSet).slice(0, 6);
-
-        return {
-          hive: [central, ...surround],
-          central,
-          pair
-        };
-      });
-
-      translatedStatus = wordPairs.map(_ => false);
-      statusDiv.textContent = `${generatedHives.length} colmeia(s) gerada(s).`;
-      currentIndex = 0;
-      startGame();
-    }
-
-    function startGame() {
-      showHints = false;
-      hintsBtn.textContent = 'Mostrar dicas';
-      renderGameState(currentIndex);
-    }
-
-    function renderGameState(idx) {
-      const { hive, central, pair } = generatedHives[idx];
-      centerLetter = central;
-      surroundingLetters = hive.filter(l => l !== central);
-
-      translateEl.textContent = pair.en.toUpperCase();
-	  speakEnglishWord(pair.en);
-      typedWord = "";
-      updateTypedDisplay();
-      renderLetters();
-      renderWordList();
-      updateProgress();
-    }
-
-    function renderLetters() {
-      honeycombEl.innerHTML = "";
-      surroundingLetters.slice(0, 6).forEach((l, i) => {
-        const pos = positions[i];
-        const div = document.createElement('div');
-        div.className = 'letter';
-        div.style.top = `${pos.top}px`;
-        div.style.left = `${pos.left}px`;
-        div.textContent = l.toUpperCase();
-        div.onclick = () => addLetter(l);
-        honeycombEl.appendChild(div);
-      });
-      const cdiv = document.createElement('div');
-      cdiv.className = 'letter center';
-      cdiv.style.top = '68px';
-      cdiv.style.left = '68px';
-      cdiv.textContent = centerLetter.toUpperCase();
-      cdiv.onclick = () => addLetter(centerLetter);
-      honeycombEl.appendChild(cdiv);
-    }
-
-    function addLetter(l) {
-      typedWord += l.toLowerCase();
-      updateTypedDisplay();
-    }
-
-    function updateTypedDisplay() {
-      typedEl.innerHTML = "";
-      for (const ch of typedWord.toUpperCase()) {
-        const span = document.createElement('span');
-        if (ch.toLowerCase() === centerLetter) {
-          span.style.color = 'var(--primary)';
-        }
-        span.textContent = ch;
-        typedEl.appendChild(span);
-      }
-    }
-
-    function clearWord() {
-      typedWord = "";
-      updateTypedDisplay();
-    }
-
-    function shuffleLetters() {
-      surroundingLetters = shuffleArray(surroundingLetters);
-      renderLetters();
-    }
-
-    function skipWord() {
-      goToNext();
-    }
-
-    function checkWord() {
-      if (!typedWord) return;
-      const w = typedWord.toLowerCase();
-      const target = generatedHives[currentIndex].pair.pt.toLowerCase();
-
-      const isNew = !translatedStatus[currentIndex];
-      if (w === target && isNew) {
-        translatedStatus[currentIndex] = true;
-        showMessage("Boa!", true);
-        renderWordList();
-        updateProgress();
-        if (translatedStatus.some(v => !v)) {
-          goToNext();
-        } else {
-          showMessage("Todas traduzidas!", true);
-          translateEl.textContent = "✅ Fim do jogo";
-        }
-      } else if (!isNew) {
-        showMessage("Já traduzida", false);
-      } else {
-        showMessage("Palavra incorreta", false);
-      }
-      clearWord();
-    }
-
-    function goToNext() {
-      const len = generatedHives.length;
-      for (let i = 1; i <= len; i++) {
-        const idx = (currentIndex + i) % len;
-        if (!translatedStatus[idx]) {
-          currentIndex = idx;
-          renderGameState(idx);
-          return;
-        }
-      }
-    }
-
-    function renderWordList() {
-      wordListEl.innerHTML = '';
-
-      const indices = Array.from({ length: wordPairs.length }, (_, i) => i);
-      const shuffledIndices = shuffleArray(indices);
-
-      shuffledIndices.forEach(idx => {
-        const pair = wordPairs[idx];
-        const isFound = translatedStatus[idx];
-        const div = document.createElement('div');
-        div.className = 'word-box';
-        if (isFound) {
-          div.classList.add('found', 'animate');
-          div.textContent = pair.pt.toUpperCase();
-        } else if (showHints) {
-          div.textContent = pair.pt.toUpperCase();
-        } else {
-          div.textContent = pair.pt.length + ' letras';
-        }
-        wordListEl.appendChild(div);
-      });
-    }
-
-    function updateProgress() {
-      const done = translatedStatus.filter(v => v).length;
-      const total = translatedStatus.length;
-      scoreEl.textContent = `${done}/${total}`;
-      progressEl.style.width = total ? (done / total) * 100 + '%' : '0%';
-    }
-
-    function showMessage(text, success) {
-      clearTimeout(messageBox._timeout);
-      messageBox.textContent = text;
-      messageBox.className = '';
-      messageBox.classList.add(success ? 'msg-success' : 'msg-error');
-      messageBox.style.display = 'inline-block';
-      messageBox._timeout = setTimeout(() => {
-        messageBox.style.display = 'none';
-      }, 2000);
-    }
-
-    function endGame() {
-      if (confirm("Deseja encerrar a partida?")) {
-        location.reload();
-      }
-    }
-	function speakEnglishWord(word) {
-  if ('speechSynthesis' in window) {
-    const utterance = new SpeechSynthesisUtterance(word);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.85; // velocidade mais lenta para ajudar no aprendizado
-    speechSynthesis.cancel(); // interrompe qualquer fala anterior
-    speechSynthesis.speak(utterance);
-  } else {
-    console.warn("Speech synthesis não é suportado neste navegador.");
+function deleteLetter(){
+  if(typedWord.length > 0){
+    typedWord = typedWord.slice(0, -1);
+    updateTypedDisplay();
   }
 }
-  </script>
+function updateTypedDisplay(){
+  typedEl.innerHTML=""; 
+  for(const ch of typedWord.toUpperCase()){
+    const s=document.createElement('span');
+    if(ch.toLowerCase()===centerLetter)s.style.color='var(--primary)';
+    s.textContent=ch;
+    typedEl.appendChild(s);
+  }
+}
+
+function shuffleLetters(){ surroundingLetters=shuffleArray(surroundingLetters); renderLetters(); }
+
+function skipWord(){ goToNext(); }
+
+function checkWord(){
+  if(!typedWord) return;
+  const w = typedWord.toLowerCase();
+  const target = generatedHives[currentIndex].pair.pt.toLowerCase();
+  const isNew = !translatedStatus[currentIndex];
+
+  if(w === target && isNew){
+    translatedStatus[currentIndex] = true;
+    typedWord = "";
+    updateTypedDisplay();
+
+    accumulatedTime = timeLeft;
+
+    showMessage("Boa!", true);
+
+    renderWordList(); 
+    updateProgress();
+
+    if(translatedStatus.every(v => v)){
+      clearInterval(timerInterval);
+      if(currentLevel < levels.length - 1){
+        setTimeout(() => nextLevel(), 1500);
+      } else {
+        showMessage("Você concluiu todos os níveis! 🏆", true);
+      }
+    } else {
+      clearInterval(timerInterval);
+      setTimeout(() => goToNext(), 1500);
+    }
+
+  } else {
+    showMessage("Palavra incorreta", false);
+  }
+}
+
+function nextLevel() {
+  if(currentLevel > 0 && accumulatedTime <= 0){
+    showMessage("Você não acumulou tempo suficiente para avançar!", false);
+    retryBtn.style.display = 'inline-block';
+    return;
+  }
+  
+  currentLevel++;
+  initializeLevel(accumulatedTime);
+}
+
+function goToNext(){
+  const len=generatedHives.length;
+  for(let i=1;i<=len;i++){
+    const idx=(currentIndex+i)%len;
+    if(!translatedStatus[idx]){ currentIndex=idx; renderGameState(idx); return; }
+  }
+}
+
+function renderWordList(){
+  wordListEl.innerHTML='';
+  wordPairs.forEach((pair,idx)=>{
+    const div=document.createElement('div');
+    div.className='word-box';
+    if(translatedStatus[idx]){ div.classList.add('found','animate'); div.textContent=pair.pt.toUpperCase(); }
+    else if(showHints){ div.textContent=pair.pt.toUpperCase(); }
+    else div.textContent=`${pair.pt.length} letras`;
+    wordListEl.appendChild(div);
+  });
+}
+
+function updateProgress(){
+  const done=translatedStatus.filter(v=>v).length;
+  const total=translatedStatus.length;
+  scoreEl.textContent=`${done}/${total}`;
+  progressEl.style.width = total ? (done/total)*100 + '%' : '0%';
+}
+
+function showMessage(text,success){
+  clearTimeout(messageBox._timeout);
+  messageBox.textContent=text;
+  messageBox.className='';
+  messageBox.classList.add(success?'msg-success':'msg-error');
+  messageBox.style.display='inline-block';
+  messageBox._timeout=setTimeout(()=>messageBox.style.display='none',2000);
+}
+
+function restartGame(){ location.reload(); }
+
+function endGame(){
+  if(confirm("Deseja encerrar a partida?")) {
+    clearInterval(timerInterval);  
+    timeLeft = 0;                
+    updateTimerDisplay();          
+    retryBtn.style.display = 'inline-block'; 
+    honeycombEl.innerHTML = "";    
+  }
+}
+
+function speakEnglishWord(word){
+  if('speechSynthesis' in window){
+    const u=new SpeechSynthesisUtterance(word);
+    u.lang='en-US'; u.rate=0.85;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }
+}
+
+initializeLevel();
+</script>
 </body>
 </html>
-
